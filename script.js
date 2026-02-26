@@ -258,7 +258,7 @@ loadingAnimation();
 locomotiveAnimation();
 cursorAnimation();
 flagAnimation();
-// page3Animation();
+page3Animation();
 
 
 
