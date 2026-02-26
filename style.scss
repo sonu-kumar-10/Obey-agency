@@ -27,10 +27,10 @@ html,
 body {
   height: 100%;
   width: 100%;
+  overflow-x: hidden; /* prevent any horizontal scroll */
 }
 
 body {
-  overflow-x: hidden;
   cursor: none;
 }
 
@@ -953,6 +953,9 @@ body {
 @media (max-width: 768px) {
   .main {
     position: relative;
+    overflow-x: hidden;
+    white-space: nowrap;
+    width: 100%;
 
     .page1 {
       height: 55vh;
@@ -1048,10 +1051,10 @@ body {
 
       .video-container {
         height: 35vh;
-        width: 100vw;
+        width: 100%;
         position: relative;
         overflow: hidden;
-        left: 0%;
+        left: 0;
 
         background-image: url("./assets/image.jpg");
         background-size: cover;
@@ -1098,7 +1101,7 @@ body {
 
     .page3 {
       min-height: auto;
-      width: 100vw;
+      width: 100%;
       position: relative;
       background-color: #151515;
 
@@ -1206,6 +1209,30 @@ body {
         }
       }
     }
+    .center-circle {
+    height: 30vw;
+    width: 30vw;
+    border-radius: 50%;
+    background-color: rgb(247, 166, 53);
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    margin: 3vw 0;
+    -webkit-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+
+    p {
+      font-size: 2.3vw;
+      color: #f1f1f1;
+    }
+  }
     .page4 {
       min-height: 100vh;
       width: 100%;
@@ -1228,8 +1255,8 @@ body {
           font-size: 4.5vw;
           font-family: "silk serif";
           font-weight: 100;
-          left: 6%;
-          top: -10%;
+          left: 5%;
+          top: -40%;
         }
 
         .underline {
@@ -1305,7 +1332,8 @@ body {
           }
           p {
             width: 50%;
-            font-size: 3vw;
+            font-size: 2.5vw;
+            font-weight: 100;
           }
         }
       }
@@ -1393,7 +1421,7 @@ body {
         font-size: 4vw;
         font-family: "silk serif";
         font-weight: 100;
-        left: 1%;
+        left: 3%;
         top: -35%;
       }
       .underline {
