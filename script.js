@@ -110,8 +110,26 @@ function loadingAnimation() {
 
 function cursorAnimation() {
   Shery.makeMagnet(".list p");
-  
-  const cursor = document.querySelector(".cursor");
+
+  // text animation on header paragraphs
+  document.querySelectorAll(".left-side-header p").forEach(el => {
+    el.addEventListener("mouseenter", () => {
+      if (typeof Shery !== "undefined" && Shery.textAnimate) {
+        Shery.textAnimate(el, {
+          style: 2,
+          y: 40,
+          duration: 1,
+          ease: "power3.out",
+          multiplier: 0.05,
+        });
+      }
+    });
+  });
+
+  const menuOverlay = document.querySelector(".menu-overlay");
+  const overlayCursor = menuOverlay ;
+  const bodyCursor = document.querySelector("body > .cursor");
+
   const videoContainer = document.querySelector(".video-container");
   const videoCursor = document.querySelector(".video-cursor");
   const video = document.querySelector(".video-container video");
@@ -122,22 +140,23 @@ function cursorAnimation() {
   let cursorY = 0;
   let isInVideoContainer = false;
 
-  // Track mouse position
+  // Track mouse position globally
   document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
   });
 
-  // Smooth animation for custom cursor
   function animateCursor() {
     cursorX += (mouseX - cursorX) * 0.2;
     cursorY += (mouseY - cursorY) * 0.2;
 
-    if (!isInVideoContainer) {
-      // Show custom cursor everywhere except video-container
-      cursor.style.left = cursorX - 16 + "px";
-      cursor.style.top = cursorY - 16 + "px";
-      cursor.style.opacity = 1;
+    if (bodyCursor) {
+      bodyCursor.style.left = cursorX - 16 + "px";
+      bodyCursor.style.top = cursorY - 16 + "px";
+      bodyCursor.style.opacity = menuOverlay && menuOverlay.classList.contains("open") ? 0 : 1;
+    }
+    if (overlayCursor) {
+      overlayCursor.style.opacity = menuOverlay && menuOverlay.classList.contains("open") ? 1 : 0;
     }
 
     requestAnimationFrame(animateCursor);
@@ -145,46 +164,43 @@ function cursorAnimation() {
 
   animateCursor();
 
-  // Video container interactions
-  videoContainer.addEventListener("mouseenter", () => {
-    isInVideoContainer = true;
-    cursor.style.opacity = 0;
-
-    videoContainer.addEventListener("mousemove", (dets) => {
-      videoCursor.style.left = dets.clientX - 40 + "px";
-      videoCursor.style.top = dets.clientY - 40 + "px";
+  if (videoContainer) {
+    videoContainer.addEventListener("mouseenter", () => {
+      isInVideoContainer = true;
+      if (bodyCursor) bodyCursor.style.opacity = 0;
     });
-  });
-
-  videoContainer.addEventListener("mouseleave", () => {
-    isInVideoContainer = false;
-    cursor.style.opacity = 1;
-    videoCursor.style.left = "80%";
-    videoCursor.style.top = "5%";
-  });
-
-  // Video play/pause toggle
-  let flag = 0;
-
-  videoContainer.addEventListener("click", () => {
-    if (flag == 0) {
-      video.play();
-      video.style.opacity = 1;
-      videoCursor.innerHTML = `<i class="ri-pause-fill"></i>`;
-      gsap.to(videoCursor, {
-        scale: 0.5,
-      });
-      flag = 1;
-    } else {
-      video.pause();
-      video.style.opacity = 0;
-      videoCursor.innerHTML = `<i class="ri-play-fill"></i>`;
-      gsap.to(videoCursor, {
-        scale: 1,
-      });
-      flag = 0;
-    }
-  });
+    videoContainer.addEventListener("mousemove", (dets) => {
+      if (videoCursor) {
+        videoCursor.style.left = dets.clientX - 40 + "px";
+        videoCursor.style.top = dets.clientY - 40 + "px";
+      }
+    });
+    videoContainer.addEventListener("mouseleave", () => {
+      isInVideoContainer = false;
+      if (bodyCursor) bodyCursor.style.opacity = 1;
+      if (videoCursor) {
+        videoCursor.style.left = "80%";
+        videoCursor.style.top = "5%";
+      }
+    });
+    let flag = 0;
+    videoContainer.addEventListener("click", () => {
+      if (!video) return;
+      if (flag === 0) {
+        video.play();
+        video.style.opacity = 1;
+        if (videoCursor) videoCursor.innerHTML = `<i class="ri-pause-fill"></i>`;
+        gsap.to(videoCursor, { scale: 0.5 });
+        flag = 1;
+      } else {
+        video.pause();
+        video.style.opacity = 0;
+        if (videoCursor) videoCursor.innerHTML = `<i class="ri-play-fill"></i>`;
+        gsap.to(videoCursor, { scale: 1 });
+        flag = 0;
+      }
+    });
+  }
 }
 
 
@@ -316,6 +332,161 @@ document.querySelectorAll(
   );
 
 });
+
+// menu open/close and item click behavior
+const menuIcon = document.querySelector('.menu-opener__square');
+const menuOverlay = document.querySelector('.menu-overlay');
+const menuCloseBtn = document.querySelector('.menu-close-btn');
+const page1 = document.querySelector('.page1');
+
+// hide overlay until user opens it
+if (menuOverlay) {
+  menuOverlay.style.visibility = 'hidden';
+}
+
+
+let menuOpen = false;
+
+const isMobile = window.innerWidth <= 768;
+
+// Function to update menu icon
+const updateMenuIcon = (isOpen) => {
+  if (menuIcon) {
+    const menuSvg = menuIcon.innerHTML;
+    if (isOpen) {
+      // Show X icon by changing the SVG content
+      menuIcon.innerHTML = '<line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1.5"></line><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="1.5"></line>';
+    } else {
+      // Restore original dots icon
+      menuIcon.innerHTML = '<rect y="10" width="2" height="2" fill="currentColor"></rect><rect y="5" width="2" height="2" fill="currentColor"></rect><rect width="2" height="2" fill="currentColor"></rect><rect x="5" y="10" width="2" height="2" fill="currentColor"></rect><rect x="5" y="5" width="2" height="2" fill="currentColor"></rect><rect x="5" width="2" height="2" fill="currentColor"></rect><rect x="10" y="10" width="2" height="2" fill="currentColor"></rect><rect x="10" y="5" width="2" height="2" fill="currentColor"></rect><rect x="10" width="2" height="2" fill="currentColor"></rect>';
+    }
+  }
+};
+
+if (menuIcon && menuOverlay) {
+  menuIcon.addEventListener('click', () => {
+    if (!menuOpen) {
+      // hide the opener icon while overlay is active to avoid overlapping white square
+      if (menuIcon) {
+        menuIcon.style.opacity = '0';
+        menuIcon.style.pointerEvents = 'none';
+      }
+      // Different animation for mobile vs desktop
+      const tl = gsap.timeline();
+      
+      if (isMobile) {
+        // Mobile: animate overlay scale + fade then animate items
+        tl.fromTo(
+          menuOverlay,
+          { scale: 0.9, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(1.4)' }
+        )
+          .fromTo(
+            menuOverlay.querySelectorAll('.menu-content p'),
+            { opacity: 0, y: 40 }, // start from below
+            { opacity: 1, y: 0, stagger: 0.1, duration: 0.35 },
+            '<'
+          );
+      } else {
+        // Desktop: slide down from top
+        tl.fromTo(
+          menuOverlay,
+          { y: '-100%', opacity: 0 },
+          { y: '0%', opacity: 1, duration: 0.8, ease: 'power4.out' }
+        ).fromTo(
+          menuOverlay.querySelectorAll('.menu-content p'),
+          { y: 40, opacity: 0 },   // start from below (bottom)
+          { y: 0, opacity: 1, stagger: 0.12, duration: 0.5 },
+          '<0.1'
+        );
+      }
+
+      // make overlay interactive and prevent page scroll
+      if (menuOverlay) menuOverlay.style.visibility = 'visible';
+      menuOverlay.classList.add('open');
+      if (page1) page1.classList.add('blurred');
+      const mainEl = document.querySelector('.main');
+      if (mainEl) mainEl.classList.add('blurred');
+      // keep the menu icon visible above the overlay
+      if (menuIcon) menuIcon.classList.add('fixed-menu-icon');
+      document.body.style.overflow = 'hidden';
+      updateMenuIcon(true);
+    } else {
+      // Close menu
+      // restore body cursor
+      if (bodyCursor) bodyCursor.style.opacity = '1';
+      if (isMobile) {
+        // hide overlay with a quick scale/fade
+        gsap.to(menuOverlay, { scale: 0.95, opacity: 0, duration: 0.28, ease: 'power1.in' });
+      } else {
+        gsap.to(menuOverlay, { y: '-100%', opacity: 0, duration: 0.6, ease: 'power4.in' });
+      }
+      // remove interactivity and restore scroll
+      menuOverlay.classList.remove('open');
+      if (page1) page1.classList.remove('blurred');
+      const mainEl2 = document.querySelector('.main');
+      if (mainEl2) mainEl2.classList.remove('blurred');
+      if (menuIcon) menuIcon.classList.remove('fixed-menu-icon');
+      document.body.style.overflow = '';
+      updateMenuIcon(false);
+      // hide after animation completes to prevent pre‑load visibility
+      gsap.delayedCall(0.3, () => {
+        if (menuOverlay) menuOverlay.style.visibility = 'hidden';
+      });
+    }
+    menuOpen = !menuOpen;
+  });
+
+  // Close button handler
+  if (menuCloseBtn) {
+    menuCloseBtn.addEventListener('click', () => {
+      if (menuOpen) {
+        if (isMobile) {
+          gsap.to(menuOverlay, { scale: 0.95, opacity: 0, duration: 0.28, ease: 'power1.in' });
+        } else {
+          gsap.to(menuOverlay, { y: '-100%', opacity: 0, duration: 0.6, ease: 'power4.in' });
+        }
+        menuOverlay.classList.remove('open');
+        if (page1) page1.classList.remove('blurred');
+        const mainEl3 = document.querySelector('.main');
+        if (mainEl3) mainEl3.classList.remove('blurred');
+        document.body.style.overflow = '';
+        updateMenuIcon(false);
+        if (menuIcon) {
+          menuIcon.classList.remove('fixed-menu-icon');
+          menuIcon.style.opacity = '';
+          menuIcon.style.pointerEvents = '';
+        }
+        menuOpen = false;
+      }
+    });
+  }
+
+  // when an item is clicked, scroll to top and close menu
+  menuOverlay.querySelectorAll('.menu-content p').forEach((item) => {
+    item.addEventListener('click', () => {
+      // animate scroll to top
+      gsap.to(window, { duration: 1, scrollTo: { y: 0, autoKill: false } });
+      // close overlay after animation
+      if (isMobile) {
+        gsap.to(menuOverlay, { opacity: 0, duration: 0.4, delay: 0.2, onComplete: () => {
+          gsap.set(menuOverlay, { scale: 0, opacity: 1 });
+        }});
+      } else {
+        gsap.to(menuOverlay, { y: '-100%', duration: 0.6, delay: 0.2, ease: 'power4.in' });
+      }
+      menuOverlay.classList.remove('open');
+      if (page1) page1.classList.remove('blurred');
+      document.body.style.overflow = '';
+      updateMenuIcon(false);
+      if (menuIcon) {
+        menuIcon.style.opacity = '';
+        menuIcon.style.pointerEvents = '';
+      }
+      menuOpen = false;
+    });
+  });
+}
 
 // Animate footer heading and run textillate (if available) with safe fallbacks
 gsap.fromTo(
